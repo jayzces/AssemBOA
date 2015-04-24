@@ -3,15 +3,20 @@ import array, collections
 class Computer(object):
     def __init__(self):
         super(Computer, self).__init__()
-        self.stack_maxlen = 5
+        self.code_lines = 0
         self.code_max = 30
-        self.vars_max = 10
         self.fatal_error = False
+        self.prog_counter = 0
+        self.stack_maxlen = 5
+        self.vars_max = 10
+        self.label_code = '69'
+
         self.address_space = [None] * 40
         self.stack = collections.deque(maxlen=self.stack_maxlen)
         self.methods_dict = {}
         self.errors = {
             'MaxLines' : 'AssemBOA: Load Error - Maximum number of lines reached. Truncating code.\n',
+            'UnknownCommand' : 'Unknown Command. Exiting.',
             'NotAnInteger' : 'Invalid argument: not an integer.',
             'EOF' : 'EOFError: Reached an end-of-file condition. Exiting.',
             'Overflow' : 'Overflow Error: Argument or result is lesser than 0 or greater than 99.',
@@ -42,21 +47,23 @@ class Computer(object):
             print self.errors['InvalidMemReference']
             self.fatal_error = True
 
-        try:
-            integer = raw_input('Enter a number: ')
+        parsed = False
+        while not parsed:
+            try:
+                integer = raw_input('Enter a number: ')
 
-            while len(integer) < 1 or len(integer) > 2:
                 integer = int(integer)
                 if integer < 0 or integer > 99:
                     print self.errors['Overflow']
-                integer = raw_input('Enter a number: ')
-
-            self.address_space[- 1 - int(arg)] = integer
-        except ValueError:
-            print self.errors['NotAnInteger']
-        except EOFError:
-            print self.errors['EOF']
-            self.fatal_error = True
+                else:
+                    self.address_space[- 1 - int(arg)] = integer
+                    parsed = True
+            except ValueError:
+                print self.errors['NotAnInteger']
+            except EOFError:
+                print self.errors['EOF']
+                self.fatal_error = True
+                return
 
     def disp(self, arg):
         try:
@@ -135,6 +142,81 @@ class Computer(object):
             print self.errors['NullOperand']
             self.fatal_error = True
 
+    def jmp(self, arg):
+        try:
+            arg = int(arg)
+            if arg < 0 or arg >= self.vars_max:
+                print self.errors['InvalidMemReference']
+                self.fatal_error = True
+                return
+
+            self.prog_counter = self.address_space[- 1 - int(arg)]
+        except ValueError:
+            print self.errors['InvalidMemReference']
+            self.fatal_error = True
+
+    def jmpl(self, arg):
+        try:
+            num1 = self.stack.pop()
+            num2 = self.stack.pop()
+            result = num1 < num2
+
+            if result:
+                arg = int(arg)
+                if arg < 0 or arg >= self.vars_max:
+                    print self.errors['InvalidMemReference']
+                    self.fatal_error = True
+                    return
+
+                self.prog_counter = self.address_space[- 1 - int(arg)]
+        except IndexError:
+            print self.errors['NullOperand']
+            self.fatal_error = True
+        except ValueError:
+            print self.errors['InvalidMemReference']
+            self.fatal_error = True
+
+    def jmpg(self, arg):
+        try:
+            num1 = self.stack.pop()
+            num2 = self.stack.pop()
+            result = num1 > num2
+
+            if result:
+                arg = int(arg)
+                if arg < 0 or arg >= self.vars_max:
+                    print self.errors['InvalidMemReference']
+                    self.fatal_error = True
+                    return
+
+                self.prog_counter = self.address_space[- 1 - int(arg)]
+        except IndexError:
+            print self.errors['NullOperand']
+            self.fatal_error = True
+        except ValueError:
+            print self.errors['InvalidMemReference']
+            self.fatal_error = True
+
+    def jeq(self, arg):
+        try:
+            num1 = self.stack.pop()
+            num2 = self.stack.pop()
+            result = num1 == num2
+
+            if result:
+                arg = int(arg)
+                if arg < 0 or arg >= self.vars_max:
+                    print self.errors['InvalidMemReference']
+                    self.fatal_error = True
+                    return
+                self.prog_counter = self.address_space[- 1 - int(arg)]
+        except IndexError:
+            print self.errors['NullOperand']
+            self.fatal_error = True
+        except ValueError:
+            print self.errors['InvalidMemReference']
+            self.fatal_error = True
+
     def add(self, arg):
         try:
             num1 = self.stack.pop()
@@ -190,6 +272,35 @@ class Computer(object):
                 return
             self.address_space[idx] = line.strip()
 
+            if self.address_space[idx][0:2] == self.label_code:
+                try:
+                    self.address_space[- 1 - int(self.address_space[idx][2:4])] = idx
+                except IndexError:
+                    print self.errors['WritingToReadOnlyMem']
+                    self.fatal_error = True
+                    return
+
+            self.code_lines += 1
+
+    def run(self):
+        self.prog_counter = 0
+        while self.prog_counter < self.code_lines:
+            if self.fatal_error is not True:
+                command = self.address_space[self.prog_counter][0:2]
+                arg = self.address_space[self.prog_counter][2:4]
+                
+                try:
+                    if command != self.label_code:
+                        self.methods_dict[command](arg)
+                except KeyError:
+                    print self.errors['UnknownCommand']
+                    self.fatal_error = True
+                    return
+
+                self.prog_counter += 1
+            else:
+                break
+
     def execute(self, file_to_read):        
         self.methods_dict = {
             '00': self.begin,
@@ -199,10 +310,10 @@ class Computer(object):
             '04': self.pushv,
             '05': self.pop,
             '06': self.mod,
-            # '07': self.jmp,
-            # '08': self.jl,
-            # '09': self.jg,
-            # '10': self.jeq,
+            '07': self.jmp,
+            '08': self.jmpl,
+            '09': self.jmpg,
+            '10': self.jeq,
             '11': self.add,
             '12': self.sub,
             '13': self.compare,
@@ -211,10 +322,4 @@ class Computer(object):
 
         self.load_to_mem(file_to_read)
 
-        for code in self.address_space:
-            if self.fatal_error is not True and code is not None:
-                command = code[0:2]
-                arg = code[2:4]
-                self.methods_dict[command](arg)
-            else:
-                break
+        self.run()
