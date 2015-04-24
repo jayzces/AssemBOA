@@ -4,14 +4,18 @@ class Computer(object):
     def __init__(self):
         super(Computer, self).__init__()
         self.stack_maxlen = 5
+        self.code_max = 30
+        self.vars_max = 10
         self.fatal_error = False
         self.address_space = [None] * 40
         self.stack = collections.deque(maxlen=self.stack_maxlen)
         self.methods_dict = {}
         self.errors = {
+            'MaxLines' : 'AssemBOA: Load Error - Maximum number of lines reached. Truncating code.\n',
             'NotAnInteger' : 'Invalid argument: not an integer.',
             'EOF' : 'EOFError: Reached an end-of-file condition. Exiting.',
-            'Overflow' : 'Overflow Error: Argument is lesser than 0 or greater than 99.',
+            'Overflow' : 'Overflow Error: Argument or result is lesser than 0 or greater than 99.',
+            'NullOperand' : 'Null Operand Error: Needed operand does not exist.',
             'StackUnderflow' : 'Fatal Error: Stack Underflow.',
             'StackOverflow' : 'Fatal Error: Stack Overflow.',
             'UndefinedVariable' : 'Fatal Error: Undefined Variable',
@@ -30,7 +34,7 @@ class Computer(object):
     def read(self, arg):
         try:
             arg = int(arg)
-            if arg < 0 or arg > 9:
+            if arg < 0 or arg >= self.vars_max:
                 print self.errors['WritingToReadOnlyMem']
                 self.fatal_error = True
                 return
@@ -57,7 +61,7 @@ class Computer(object):
     def disp(self, arg):
         try:
             arg = int(arg)
-            if arg < 0 or arg > 9:
+            if arg < 0 or arg >= self.vars_max:
                 print self.errors['InvalidMemReference']
                 self.fatal_error = True
                 return
@@ -90,7 +94,7 @@ class Computer(object):
         try:
             arg = int(arg)
 
-            if arg < 0 or arg > 9:
+            if arg < 0 or arg >= self.vars_max:
                 print self.errors['UndefinedVariable']
                 self.fatal_error = True
                 return
@@ -108,7 +112,7 @@ class Computer(object):
     def pop(self, arg):
         try:
             arg = int(arg)
-            if arg < 0 or arg > 9:
+            if arg < 0 or arg >= self.vars_max:
                 print self.errors['WritingToReadOnlyMem']
                 self.fatal_error = True
                 return
@@ -121,9 +125,69 @@ class Computer(object):
             print self.errors['StackUnderflow']
             self.fatal_error = True
 
+    def mod(self, arg):
+        try:
+            num1 = self.stack.pop()
+            num2 = self.stack.pop()
+            result = num2 % num1
+            self.stack.append(result)
+        except IndexError:
+            print self.errors['NullOperand']
+            self.fatal_error = True
+
+    def add(self, arg):
+        try:
+            num1 = self.stack.pop()
+            num2 = self.stack.pop()
+            result = num2 + num1
+
+            if result > 99:
+                print self.errors['Overflow']
+                self.fatal_error = True
+                return
+
+            self.stack.append(result)
+        except IndexError:
+            print self.errors['NullOperand']
+            self.fatal_error = True
+
+    def sub(self, arg):
+        try:
+            num1 = self.stack.pop()
+            num2 = self.stack.pop()
+            result = num2 - num1
+
+            if result < 0:
+                print self.errors['Overflow']
+                self.fatal_error = True
+                return
+
+            self.stack.append(result)
+        except IndexError:
+            print self.errors['NullOperand']
+            self.fatal_error = True
+
+    def compare(self, arg):
+        try:
+            num1 = self.stack.pop()
+            num2 = self.stack.pop()
+            result = num2 == num1
+
+            if result:
+                self.stack.append(1)
+            else:
+                self.stack.append(0)
+            
+        except IndexError:
+            print self.errors['NullOperand']
+            self.fatal_error = True
+
     def load_to_mem(self, file_to_read):
         machine_code = open(file_to_read, 'rb')
         for idx, line in enumerate(machine_code):
+            if idx >= self.code_max:
+                print self.errors['MaxLines']
+                return
             self.address_space[idx] = line.strip()
 
     def execute(self, file_to_read):        
@@ -134,14 +198,14 @@ class Computer(object):
             '03': self.pushi,
             '04': self.pushv,
             '05': self.pop,
-            # '06': self.mod,
+            '06': self.mod,
             # '07': self.jmp,
             # '08': self.jl,
             # '09': self.jg,
             # '10': self.jeq,
-            # '11': self.add,
-            # '12': self.sub,
-            # '13': self.compare,
+            '11': self.add,
+            '12': self.sub,
+            '13': self.compare,
             '99': self.end,
         }
 
