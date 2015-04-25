@@ -19,15 +19,17 @@ class SyntacticAnalyzer(object):
             'sub': '1200',
             'cmp': '1300',
             'end': '9999',
-        }
+        }        
+        self.num_of_errors = 0
         self.errors = {
             'Unknown Command': 'Error: Unknown command ',
             'Overflow': 'Overflow Error: Argument or result is lesser than 0 or greater than 99.',
             'Identifier Expected': 'Error: Identifier expected ',
             'Integer Value Expected' : 'Error: Integer value expected ',
         }
-        self.num_of_errors = 0
+        self.token_dictionary = {
 
+        }
 
     def syntax_check(self, filename):
         with open(filename, "r") as txt:
@@ -129,6 +131,7 @@ class SyntacticAnalyzer(object):
 
     def analyze(self, file_to_read):
         self.syntax_check(file_to_read)
+
         if self.num_of_errors == 0:
             print 'Syntactic Analysis Complete. No errors found.'
         else:
@@ -136,3 +139,22 @@ class SyntacticAnalyzer(object):
                 print 'Syntactic Analysis Complete. ' + str(self.num_of_errors) + ' errors were found.'
             else:
                 print 'Syntactic Analysis Complete. ' + str(self.num_of_errors) + ' error was found.'
+
+    def get_token_dictionary(self, filename):
+         with open(filename, "r") as txt:
+            for line in txt:
+                line = line.strip()
+                tokens = line.split()
+                for token in tokens:
+                    if self.is_identifier(token):
+                        self.token_dictionary[token] = 'identifier'
+                    elif self.is_command(token):
+                        self.token_dictionary[token] = 'command'
+                    elif self.is_label(token):
+                        self.token_dictionary[token] = 'label'
+                    else:
+                        try:
+                            integer = int(tokens[1])
+                            self.token_dictionary[token] = 'integer'
+                        except ValueError:
+                            self.token_dictionary[token] = 'identifier'
