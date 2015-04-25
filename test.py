@@ -1,5 +1,7 @@
-from assemboa import *
+# from assemboa import *
+from SyntacticAnalyzer import *
 
-A = Assemboa()
+# A = Assemboa()
 # A.read_and_write('input.in', 'output.out')
-A.analyze('input.in')
+S = SyntacticAnalyzer()
+S.analyze('input.in')

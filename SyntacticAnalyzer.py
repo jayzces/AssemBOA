@@ -3,7 +3,7 @@ import string
 class SyntacticAnalyzer(object):
     def __init__(self):
         super(SyntacticAnalyzer, self).__init__()
-        command_list = {
+        self.command_list = {
             'begin': '0000',
             'read': '01',
             'disp': '02',
@@ -21,53 +21,97 @@ class SyntacticAnalyzer(object):
             'end': '9999',
         }
         self.errors = {
-            'Unknown Command': 'Error: Unknown Command: ',
+            'Unknown Command': 'Error: Unknown command ',
             'Overflow': 'Overflow Error: Argument or result is lesser than 0 or greater than 99.',
-            'Identifier Expected': 'Error: Identifier expected. '
+            'Identifier Expected': 'Error: Identifier expected ',
+            'Integer Value Expected' : 'Error: Integer value expected ',
         }
+        self.num_of_errors = 0
 
 
-    def analyze(self, file_to_read):
-        if syntax_check(file_to_read, self.command_list):
-            print 'Syntactic Analysis Complete. No errors found.'
-        else:
-            print 'PATAKA LANG! BOGO HAHAHAHAHAHAHA'
-
-    def syntax_check(filename, command_list):
+    def syntax_check(self, filename):
         with open(filename, "r") as txt:
+            line_number = 0
             for line in txt:
-                is_correct = syntax_analyze(line.strip(), command_list)
+                line_number += 1
+                is_correct = self.syntax_analyze(line.strip(), line_number)
                 if not is_correct:
                     return False
 
         return True
 
-    def syntax_analyze(line, command_list):
+    def syntax_analyze(self, line, line_number):
         tokens = line.split()
 
         if len(tokens) == 1:
-            if not is_command(tokens[0], command_list) and not is_macro(tokens[0], command_list):
-                print self.errors['Unknown Command'] + tokens[0]
+            if not self.is_command(tokens[0]) and not self.is_label(tokens[0]):
+                self.num_of_errors += 1
+                print self.errors['Unknown Command'] + 'at line ' + str(line_number) + ': ' + ' "' + tokens[0] + '"'
         elif len(tokens) == 2:
-            if is_command(tokens[0], command_list):
+            if self.is_command(tokens[0]):
                 if tokens[0] == 'pushi':
-                    if int(tokens[1]) < 0 or int(tokens[1]) > 99:
-                        print self.errors['Overflow']
+                    try:
+                        integer = int(tokens[1])
+                        if int(tokens[1]) < 0 or int(tokens[1]) > 99:
+                            self.num_of_errors += 1
+                            print self.errors['Overflow']
+                    except ValueError:
+                        self.num_of_errors += 1
+                        print self.errors['Integer Value Expected'] + 'at line ' + str(line_number) + ': "' + tokens[1] + '" found.'
                 else:
-                    if not is_identifier(tokens[1], command_list):
-                        print self.errors['Identifier Expected']
+                    if not self.is_identifier(tokens[1]):
+                        self.num_of_errors += 1
+                        print self.errors['Identifier Expected'] + 'at line ' + str(line_number) + ': "' + tokens[1] + '" found.'
             else:
-                print self.errors['Unknown Command'] + tokens[0]
-
+                self.num_of_errors += 1
+                print self.errors['Unknown Command'] + 'at line ' + str(line_number) + ': ' + ' "' + tokens[0] + '"'
+        # error-handling for lines with more than two tokens
+        elif len(tokens) > 2:
+            # if line starts with an identifier
+            if self.is_identifier(tokens[0]):
+                self.num_of_errors += len(tokens)
+                for token in tokens:
+                    print self.errors['Unknown Command'] + 'at line ' + str(line_number) + ': "' + token + '"'
+            # if line starts with a command
+            elif self.is_command(tokens[0]):
+                if tokens[0] == 'pushi':
+                    try:
+                        integer = int(tokens[1])
+                        if int(tokens[1]) < 0 or int(tokens[1]) > 99:
+                            self.num_of_errors += 1
+                            print self.errors['Overflow']
+                    except ValueError:
+                        self.num_of_errors += 1
+                        print self.errors['Integer Value Expected'] + 'at line ' + str(line_number) + ': "' + tokens[1] + '" found.'
+                    for token in tokens:                        
+                        self.num_of_errors += 1
+                        print self.errors['Unknown Command'] + 'at line ' + str(line_number) + ': "' + token + '"'
+                # if second token is not an identifier
+                elif not self.is_identifier(tokens[1]):
+                    for x in range(1, len(tokens)):
+                        self.num_of_errors += 1
+                        print self.errors['Unknown Command'] + 'at line ' + str(line_number) + ': "' + tokens[x] + '"'
+                elif self.is_identifier(tokens[1]):
+                    for x in range(2, len(tokens)):
+                        self.num_of_errors += 1
+                        print self.errors['Unknown Command'] + 'at line ' + str(line_number) + ': "' + tokens[x] + '"'
+                else:
+                    for token in tokens:
+                        self.num_of_errors += 1
+                        print self.errors['Unknown Command'] + 'at line ' + str(line_number) + ': "' + token + '"'
+            else:
+                for token in tokens:
+                    self.num_of_errors += 1
+                    print self.errors['Unknown Command'] + 'at line ' + str(line_number) + ': "' + token + '"'
         return True
 
 
-    def is_command(token, command_list):
-        return command_list.has_key(token.lower())
+    def is_command(self, token):
+        return self.command_list.has_key(token.lower())
 
 
-    def is_identifier(token, command_list):
-        if token not in string.digits and token.isalpha() and not command_list.has_key(token.lower()):
+    def is_identifier(self, token):
+        if token not in string.digits and token.isalpha() and not self.command_list.has_key(token.lower()):
             for c in token:
                 if c.isalnum() or c == '_':
                     continue
@@ -77,8 +121,18 @@ class SyntacticAnalyzer(object):
         else:
             return False
 
-    def is_macro(token, command_list):
+    def is_label(self, token):
         s = token[:-1]
         c = token[-1]
 
-        return is_identifier(s, command_list) and c == ':'
+        return self.is_identifier(s) and c == ':'
+
+    def analyze(self, file_to_read):
+        self.syntax_check(file_to_read)
+        if self.num_of_errors == 0:
+            print 'Syntactic Analysis Complete. No errors found.'
+        else:
+            if self.num_of_errors > 1:
+                print 'Syntactic Analysis Complete. ' + str(self.num_of_errors) + ' errors were found.'
+            else:
+                print 'Syntactic Analysis Complete. ' + str(self.num_of_errors) + ' error was found.'
