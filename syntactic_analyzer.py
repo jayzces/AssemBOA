@@ -59,6 +59,9 @@ class SyntacticAnalyzer(object):
                     except ValueError:
                         self.num_of_errors += 1
                         print self.errors['Integer Value Expected'] + 'at line ' + str(line_number) + ': "' + tokens[1] + '" found.'
+                elif tokens[0] == 'begin' or tokens[0] == 'end' or tokens[0] == 'add' or tokens[0] == 'sub' or tokens[0] == 'mod' or tokens[0] == 'cmp':                   
+                    self.num_of_errors += 1                    
+                    print self.errors['Unknown Command'] + 'at line ' + str(line_number) + ': ' + ' "' + tokens[1] + '"'
                 else:
                     if not self.is_identifier(tokens[1]):
                         self.num_of_errors += 1
@@ -84,9 +87,14 @@ class SyntacticAnalyzer(object):
                     except ValueError:
                         self.num_of_errors += 1
                         print self.errors['Integer Value Expected'] + 'at line ' + str(line_number) + ': "' + tokens[1] + '" found.'
-                    for token in tokens:                        
+                    for x in range(1, len(tokens)):                        
                         self.num_of_errors += 1
-                        print self.errors['Unknown Command'] + 'at line ' + str(line_number) + ': "' + token + '"'
+                        print self.errors['Unknown Command'] + 'at line ' + str(line_number) + ': "' + tokens[x] + '"'
+                # if command does not require parameters and parameters are found
+                elif tokens[0] == 'begin' or tokens[0] == 'end' or tokens[0] == 'add' or tokens[0] == 'sub' or tokens[0] == 'mod' or tokens[0] == 'cmp':
+                    for x in range(1, len(tokens)):
+                        self.num_of_errors += 1
+                        print self.errors['Unknown Command'] + 'at line ' + str(line_number) + ': "' + tokens[x] + '"'
                 # if second token is not an identifier
                 elif not self.is_identifier(tokens[1]):
                     for x in range(1, len(tokens)):
