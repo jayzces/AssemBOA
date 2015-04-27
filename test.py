@@ -7,5 +7,8 @@ from semantic_analyzer import *
 syntactic = SyntacticAnalyzer()
 syntactic.analyze('input.in')
 syntactic.get_token_dictionary('input.in')
+print syntactic.token_dictionary
 semantic = SemanticAnalyzer(syntactic.token_dictionary)
+# print semantic.token_dictionary
 semantic.generate_symbol_table()
+semantic.analyze('input.in')

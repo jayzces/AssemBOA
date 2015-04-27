@@ -7,8 +7,51 @@ class SemanticAnalyzer(object):
         self.symbol_table = [[]]
         self.current_row_index = 0
         self.current_mem_space = 0
+        self.errors = {
+            'Missing BEGIN Error': 'Missing BEGIN Error: "BEGIN" command not found at line 1.',
+            'Misplaced BEGIN Error': 'Misplaced BEGIN Error: More than one instance of "BEGIN" command found.',
+        }
+
+    def analyze(self, filename):
+        is_begin_found = False
+        is_end_found = False
+        line_number = 1
+
+        with open(filename, "r") as txt:
+            for line in txt:
+                line = line.strip()
+                print line
+                if '\s' in line:
+                    tokens = line.split()
+                    for x in range(0, len(tokens)):
+                        if x == 0 and line_number == 1:
+                            if tokens[x] == 'begin' or tokens[x] == 'BEGIN':
+                                is_begin_found = True
+                            else:
+                                print tokens[x]
+                                print self.errors['Missing BEGIN Error']
+                        else:
+                            if tokens[x] == 'begin' or tokens[x] == 'BEGIN':
+                                print self.errors['Misplaced BEGIN Error']
+                            elif tokens[x] == 'end' or tokens[x] == 'END':
+                                break
+                                print line_number
+                else:
+                    if line_number == 1:
+                        if line == 'begin' or line == 'BEGIN':
+                            is_begin_found = True
+                        else:
+                            print self.errors['Missing BEGIN Error']
+                    else:
+                        if line == 'begin' or line == 'BEGIN':
+                            print self.errors['Misplaced BEGIN Error']
+                        elif line == 'end' or line == 'END':
+                            break
+                            print line_number
+                line_number += 1
 
     def generate_symbol_table(self):
+        # place labels in the symbol_table first
         self.get_labels()
         for token, token_type in self.token_dictionary.iteritems():
             if token_type == 'identifier':
