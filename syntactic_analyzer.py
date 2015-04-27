@@ -1,4 +1,5 @@
 import string
+from collections import OrderedDict
 
 class SyntacticAnalyzer(object):
     def __init__(self):
@@ -27,9 +28,7 @@ class SyntacticAnalyzer(object):
             'Identifier Expected': 'Error: Identifier expected ',
             'Integer Value Expected' : 'Error: Integer value expected ',
         }
-        self.token_dictionary = {
-
-        }
+        self.token_dictionary = OrderedDict()
 
     def syntax_check(self, filename):
         with open(filename, "r") as txt:
