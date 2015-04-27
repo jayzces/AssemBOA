@@ -34,7 +34,8 @@ class SemanticAnalyzer(object):
                     else:
                         return 'Fatal Error: Out of Memory.'
 
-        print self.symbol_table
+        print 'Symbol Table:' 
+        for symbol in self.symbol_table: print symbol
 
     def get_labels(self):
         for token, token_type in self.token_dictionary.iteritems():
@@ -42,7 +43,6 @@ class SemanticAnalyzer(object):
                 if self.current_row_index != 0:
                     if not token in (li[0] for li in self.symbol_table):
                         if self.current_mem_space < 10:
-                            print self.symbol_table
                             row = []
                             row.append(token[:-1])
                             row.append(token_type)
