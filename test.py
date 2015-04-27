@@ -8,4 +8,4 @@ syntactic = SyntacticAnalyzer()
 syntactic.analyze('input.in')
 syntactic.get_token_dictionary('input.in')
 semantic = SemanticAnalyzer(syntactic.token_dictionary)
-print semantic.token_dictionary
+semantic.generate_symbol_table()
