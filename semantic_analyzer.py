@@ -32,7 +32,8 @@ class SemanticAnalyzer(object):
                                 print self.errors['Missing BEGIN Error']
                         else:
                             if tokens[x] == 'begin' or tokens[x] == 'BEGIN':
-                                print self.errors['Misplaced BEGIN Error']
+                                if is_begin_found:
+                                    print self.errors['Misplaced BEGIN Error']
                             elif tokens[x] == 'end' or tokens[x] == 'END':
                                 break
                                 print line_number
@@ -44,7 +45,8 @@ class SemanticAnalyzer(object):
                             print self.errors['Missing BEGIN Error']
                     else:
                         if line == 'begin' or line == 'BEGIN':
-                            print self.errors['Misplaced BEGIN Error']
+                            if is_begin_found:
+                                print self.errors['Misplaced BEGIN Error']
                         elif line == 'end' or line == 'END':
                             break
                             print line_number
