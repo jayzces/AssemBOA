@@ -1,4 +1,4 @@
-import string
+import string, re
 
 class SemanticAnalyzer(object):
     def __init__(self, token_dictionary):
@@ -14,14 +14,14 @@ class SemanticAnalyzer(object):
 
     def analyze(self, filename):
         is_begin_found = False
-        is_end_found = False
         line_number = 1
 
         with open(filename, "r") as txt:
             for line in txt:
-                line = line.strip()
+                line = str(line.strip())
                 print line
-                if '\s' in line:
+                if re.search(r"\s", line):
+                # if ' ' in line:
                     tokens = line.split()
                     for x in range(0, len(tokens)):
                         if x == 0 and line_number == 1:

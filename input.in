@@ -1,4 +1,3 @@
-
 begin
     read N
     pushv N
@@ -14,4 +13,5 @@ even:
     pop ans
 stop:
     disp ans
+    begin
 end
