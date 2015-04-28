@@ -28,7 +28,8 @@ class SyntacticAnalyzer(object):
             'Identifier Expected': 'Error: Identifier expected ',
             'Integer Value Expected' : 'Error: Integer value expected ',
         }
-        self.token_dictionary = OrderedDict()
+        # self.token_dictionary = OrderedDict()
+        self.token_dictionary = []
 
     def syntax_check(self, filename):
         with open(filename, "r") as txt:
@@ -148,20 +149,38 @@ class SyntacticAnalyzer(object):
                 print 'Syntactic Analysis Complete. ' + str(self.num_of_errors) + ' error was found.'
 
     def get_token_dictionary(self, filename):
-         with open(filename, "r") as txt:
+        current_row = 0;
+        with open(filename, "r") as txt:
             for line in txt:
                 line = line.strip()
                 tokens = line.split()
                 for token in tokens:
                     if self.is_identifier(token):
-                        self.token_dictionary[token] = 'identifier'
+                        row = []
+                        row.append(token)
+                        row.append('identifier')
+                        self.token_dictionary.append(row)
                     elif self.is_command(token):
-                        self.token_dictionary[token] = 'command'
+                        row = []
+                        row.append(token)
+                        row.append('command')
+                        self.token_dictionary.append(row)
                     elif self.is_label(token):
-                        self.token_dictionary[token] = 'label'
+                        row = []
+                        row.append(token)
+                        row.append('label')
+                        self.token_dictionary.append(row)
                     else:
                         try:
                             integer = int(tokens[1])
-                            self.token_dictionary[token] = 'integer'
+                            row = []
+                            row.append(token)
+                            row.append('integer')
+                            self.token_dictionary.append(row)
                         except ValueError:
-                            self.token_dictionary[token] = 'identifier'
+                            row = []
+                            row.append(token)
+                            row.append('identifier')
+                            self.token_dictionary.append(row)
+        print 'Token Dictionary:' 
+        for token in self.token_dictionary: print token

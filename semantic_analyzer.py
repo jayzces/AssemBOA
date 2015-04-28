@@ -55,14 +55,14 @@ class SemanticAnalyzer(object):
     def generate_symbol_table(self):
         # place labels in the symbol_table first
         self.get_labels()
-        for token, token_type in self.token_dictionary.iteritems():
-            if token_type == 'identifier':
+        for item in self.token_dictionary:
+            if item[1] == 'identifier':
                 if self.current_row_index != 0:
-                    if not token in (li[0] for li in self.symbol_table):
+                    if not item[0] in (li[0] for li in self.symbol_table):
                         if self.current_mem_space < 10:
                             row = []
-                            row.append(token)
-                            row.append(token_type)
+                            row.append(item[0])
+                            row.append(item[1])
                             row.append('0' + str(self.current_mem_space))
                             self.symbol_table.append(row)
                             self.current_row_index += 1
@@ -71,8 +71,8 @@ class SemanticAnalyzer(object):
                             return 'Fatal Error: Out of Memory.'
                 else:
                     if self.current_mem_space < 10:
-                            self.symbol_table[0].append(token)
-                            self.symbol_table[0].append(token_type)
+                            self.symbol_table[0].append(item[0])
+                            self.symbol_table[0].append(item[1])
                             self.symbol_table[0].append('0' + str(self.current_mem_space))
                             self.current_row_index += 1
                             self.current_mem_space += 1
@@ -83,14 +83,14 @@ class SemanticAnalyzer(object):
         for symbol in self.symbol_table: print symbol
 
     def get_labels(self):
-        for token, token_type in self.token_dictionary.iteritems():
-            if token_type == 'label':
+        for item in self.token_dictionary:
+            if item[1] == 'label':
                 if self.current_row_index != 0:
-                    if not token in (li[0] for li in self.symbol_table):
+                    if not item[0] in (li[0] for li in self.symbol_table):
                         if self.current_mem_space < 10:
                             row = []
-                            row.append(token[:-1])
-                            row.append(token_type)
+                            row.append(item[0][:-1])
+                            row.append(item[1])
                             row.append('0' + str(self.current_mem_space))
                             self.symbol_table.append(row)
                             self.current_row_index += 1
@@ -99,8 +99,8 @@ class SemanticAnalyzer(object):
                             return 'Fatal Error: Out of Memory.'
                 else:
                     if self.current_mem_space < 10:
-                            self.symbol_table[0].append(token[:-1])
-                            self.symbol_table[0].append(token_type)
+                            self.symbol_table[0].append(item[0][:-1])
+                            self.symbol_table[0].append(item[1])
                             self.symbol_table[0].append('0' + str(self.current_mem_space))
                             self.current_row_index += 1
                             self.current_mem_space += 1
