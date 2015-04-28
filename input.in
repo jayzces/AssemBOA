@@ -1,5 +1,5 @@
 begin
-    read N asd ksjd
+    read N
     pushv N
     pushi 2
     mod
@@ -8,11 +8,10 @@ begin
     pushi 0
     pop ans
     jmp stop
-    bla
-    pushi a
 even:
     pushi 1
     pop ans
 stop:
     disp ans
+    begin
 end

@@ -1,4 +1,5 @@
 import string
+from collections import OrderedDict
 
 class SyntacticAnalyzer(object):
     def __init__(self):
@@ -19,15 +20,16 @@ class SyntacticAnalyzer(object):
             'sub': '1200',
             'cmp': '1300',
             'end': '9999',
-        }
+        }        
+        self.num_of_errors = 0
         self.errors = {
             'Unknown Command': 'Error: Unknown command ',
             'Overflow': 'Overflow Error: Argument or result is lesser than 0 or greater than 99.',
             'Identifier Expected': 'Error: Identifier expected ',
             'Integer Value Expected' : 'Error: Integer value expected ',
         }
-        self.num_of_errors = 0
-
+        # self.token_dictionary = OrderedDict()
+        self.token_dictionary = []
 
     def syntax_check(self, filename):
         with open(filename, "r") as txt:
@@ -58,6 +60,9 @@ class SyntacticAnalyzer(object):
                     except ValueError:
                         self.num_of_errors += 1
                         print self.errors['Integer Value Expected'] + 'at line ' + str(line_number) + ': "' + tokens[1] + '" found.'
+                elif tokens[0] == 'begin' or tokens[0] == 'end' or tokens[0] == 'add' or tokens[0] == 'sub' or tokens[0] == 'mod' or tokens[0] == 'cmp':                   
+                    self.num_of_errors += 1                    
+                    print self.errors['Unknown Command'] + 'at line ' + str(line_number) + ': ' + ' "' + tokens[1] + '"'
                 else:
                     if not self.is_identifier(tokens[1]):
                         self.num_of_errors += 1
@@ -83,9 +88,14 @@ class SyntacticAnalyzer(object):
                     except ValueError:
                         self.num_of_errors += 1
                         print self.errors['Integer Value Expected'] + 'at line ' + str(line_number) + ': "' + tokens[1] + '" found.'
-                    for token in tokens:                        
+                    for x in range(1, len(tokens)):                        
                         self.num_of_errors += 1
-                        print self.errors['Unknown Command'] + 'at line ' + str(line_number) + ': "' + token + '"'
+                        print self.errors['Unknown Command'] + 'at line ' + str(line_number) + ': "' + tokens[x] + '"'
+                # if command does not require parameters and parameters are found
+                elif tokens[0] == 'begin' or tokens[0] == 'end' or tokens[0] == 'add' or tokens[0] == 'sub' or tokens[0] == 'mod' or tokens[0] == 'cmp':
+                    for x in range(1, len(tokens)):
+                        self.num_of_errors += 1
+                        print self.errors['Unknown Command'] + 'at line ' + str(line_number) + ': "' + tokens[x] + '"'
                 # if second token is not an identifier
                 elif not self.is_identifier(tokens[1]):
                     for x in range(1, len(tokens)):
@@ -129,6 +139,7 @@ class SyntacticAnalyzer(object):
 
     def analyze(self, file_to_read):
         self.syntax_check(file_to_read)
+
         if self.num_of_errors == 0:
             print 'Syntactic Analysis Complete. No errors found.'
         else:
@@ -136,3 +147,40 @@ class SyntacticAnalyzer(object):
                 print 'Syntactic Analysis Complete. ' + str(self.num_of_errors) + ' errors were found.'
             else:
                 print 'Syntactic Analysis Complete. ' + str(self.num_of_errors) + ' error was found.'
+
+    def get_token_dictionary(self, filename):
+        current_row = 0;
+        with open(filename, "r") as txt:
+            for line in txt:
+                line = line.strip()
+                tokens = line.split()
+                for token in tokens:
+                    if self.is_identifier(token):
+                        row = []
+                        row.append(token)
+                        row.append('identifier')
+                        self.token_dictionary.append(row)
+                    elif self.is_command(token):
+                        row = []
+                        row.append(token)
+                        row.append('command')
+                        self.token_dictionary.append(row)
+                    elif self.is_label(token):
+                        row = []
+                        row.append(token)
+                        row.append('label')
+                        self.token_dictionary.append(row)
+                    else:
+                        try:
+                            integer = int(tokens[1])
+                            row = []
+                            row.append(token)
+                            row.append('integer')
+                            self.token_dictionary.append(row)
+                        except ValueError:
+                            row = []
+                            row.append(token)
+                            row.append('identifier')
+                            self.token_dictionary.append(row)
+        print 'Token Dictionary:' 
+        for token in self.token_dictionary: print token
