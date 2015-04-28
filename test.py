@@ -1,12 +1,19 @@
 # from assemboa import *
 from syntactic_analyzer import *
 from semantic_analyzer import *
+from code_translator import *
+from computer import *
 
 # A = Assemboa()
 # A.read_and_write('input.in', 'output.out')
+file_to_read = 'input.in'
+file_to_write = 'output.out'
+
 syntactic = SyntacticAnalyzer()
-syntactic.analyze('input.in')
-syntactic.get_token_dictionary('input.in')
+syntactic.analyze(file_to_read)
 semantic = SemanticAnalyzer(syntactic.token_dictionary)
-semantic.generate_symbol_table()
-semantic.analyze('input.in')
+semantic.analyze(file_to_read)
+code_translator = CodeTranslator(syntactic.token_dictionary, semantic.symbol_table)
+code_translator.translate(file_to_write)
+computer = Computer()
+computer.execute(file_to_write)
