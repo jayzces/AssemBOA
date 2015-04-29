@@ -20,7 +20,7 @@ class SyntacticAnalyzer(object):
             'sub': '1200',
             'cmp': '1300',
             'end': '9999',
-        }        
+        }
         self.num_of_errors = 0
         self.errors = {
             'Unknown Command': 'Error: Unknown command ',
@@ -141,12 +141,14 @@ class SyntacticAnalyzer(object):
         self.syntax_check(file_to_read)
 
         if self.num_of_errors == 0:
-            print 'Syntactic Analysis Complete. No errors found.'
+            print '\nSyntactic Analysis Complete. No errors found.\n'
         else:
             if self.num_of_errors > 1:
-                print 'Syntactic Analysis Complete. ' + str(self.num_of_errors) + ' errors were found.'
+                print '\nSyntactic Analysis Complete. ' + str(self.num_of_errors) + ' errors were found.\n'
             else:
-                print 'Syntactic Analysis Complete. ' + str(self.num_of_errors) + ' error was found.'
+                print '\nSyntactic Analysis Complete. ' + str(self.num_of_errors) + ' error was found.\n'
+
+        self.get_token_dictionary(file_to_read)
 
     def get_token_dictionary(self, filename):
         current_row = 0;

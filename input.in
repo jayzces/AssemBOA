@@ -13,5 +13,4 @@ even:
     pop ans
 stop:
     disp ans
-    begin
 end
