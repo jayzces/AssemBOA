@@ -3,6 +3,7 @@ import array, collections
 class Computer(object):
     def __init__(self):
         super(Computer, self).__init__()
+        self.verbose = False
         self.code_lines = 0
         self.code_max = 30
         self.fatal_error = False
@@ -37,6 +38,9 @@ class Computer(object):
         print 'AssemBOA: Execution finished...'
 
     def read(self, arg):
+        if self.verbose:
+            print 'Reading integer to store to address', arg, '...'
+
         try:
             arg = int(arg)
             if arg < 0 or arg >= self.vars_max:
@@ -282,7 +286,7 @@ class Computer(object):
 
             self.code_lines += 1
 
-    def run(self):
+    def run(self, step_by_step = False):
         self.prog_counter = 0
         while self.prog_counter < self.code_lines:
             if self.fatal_error is not True:
@@ -290,18 +294,25 @@ class Computer(object):
                 arg = self.address_space[self.prog_counter][2:4]
                 
                 try:
+                    if step_by_step:
+                        print self.address_space[self.prog_counter]
+                        print '----', raw_input()
+
                     if command != self.label_code:
                         self.methods_dict[command](arg)
+
                 except KeyError:
                     print self.errors['UnknownCommand']
                     self.fatal_error = True
                     return
 
                 self.prog_counter += 1
+
             else:
                 break
 
-    def execute(self, file_to_read):        
+
+    def execute(self, file_to_read, step_by_step = False):
         self.methods_dict = {
             '00': self.begin,
             '01': self.read,
@@ -320,6 +331,9 @@ class Computer(object):
             '99': self.end,
         }
 
+        self.verbose = step_by_step
+
         self.load_to_mem(file_to_read)
 
-        self.run()
+        self.run(step_by_step)
+        
