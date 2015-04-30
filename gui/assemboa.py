@@ -6,7 +6,7 @@ class Assemboa(Frame):
         Frame.__init__(self, parent)
         self.parent = parent
         # self.centerWindow()
-        self.parent.geometry('+100+100')
+        self.parent.geometry('+50+50')
         self.initUI()
         self.start()
 
@@ -46,9 +46,6 @@ class Assemboa(Frame):
         self.open_btn = Button(self, text="Open", command=self.open, padx=10,
             image=self.img2, compound="top")
         self.open_btn.pack(side=LEFT)
-        self.run_btn = Button(self, text="Run", command=self.run, padx=10,
-            image=self.img3, compound="top")
-        self.run_btn.pack(side=LEFT)
 
 
     def new(self):
@@ -139,46 +136,91 @@ class Assemboa(Frame):
         self.title2 = Label(self.f2, textvariable=var2, relief=RAISED, bd=0)
         var2.set("Stack")
         self.title2.grid(row=0, column=1)
-        self.text2 = Text(self.f2, width=10, heigh=15, padx=10, pady=10)
+        self.text2 = Text(self.f2, width=10, height=15, padx=10, pady=10)
         self.text2.grid(row=1, column=1, padx=13)
+
+        var3 = StringVar()
+        self.title3 = Label(self.f2, textvariable=var3, relief=RAISED, bd=0)
+        var3.set("Array")
+        self.title3.grid(row=0, column=2)
+        self.text3 = Text(self.f2, width=20, height=15, padx=10, pady=10)
+        self.text3.grid(row=1, column=2, padx=13)
 
         self.f3 = Frame(self)
         self.f3.pack()
 
-        var3 = StringVar()
-        self.title3 = Label(self.f3, textvariable=var3, relief=RAISED, bd=0)
-        var3.set("Log")
-        self.title3.pack()
-        self.text3 = Text(self.f3, width=50, height=7, padx=10, pady=10,
+        var4 = StringVar()
+        self.title4 = Label(self.f3, textvariable=var4, relief=RAISED, bd=0)
+        var4.set("Log")
+        self.title4.pack()
+        self.text4 = Text(self.f3, width=76, height=7, padx=10, pady=10,
             bg="black", fg="white")
-        self.text3.pack()
+        self.text4.pack()
 
         self.f4 = Frame(self)
         self.f4.pack(pady=10)
-
-        self.view_code = Button(self.f4, text="View Code",
-            command=self.viewCode, padx=20)
-        self.view_code.pack(side=LEFT)
-        self.view_ml = Button(self.f4, text="View Machine Language Code",
-            command=self.viewML, padx=20)
-        self.view_ml.pack(side=LEFT)
-
         self.f5 = Frame(self)
-        self.f5.pack(pady=5)
+        self.f5.pack()
 
-        self.new_btn = Button(self, text="New", command=self.new, padx=10,
-            image=self.img, compound="top")
+        self.img = PhotoImage(file="run_all.gif")
+        self.img2 = PhotoImage(file="run_step.gif")
+        self.run_all = Button(self.f4, text="Run All", command=self.runAll,
+            padx=5, image=self.img, compound="top")
+        self.run_all.pack(side=LEFT)
+        self.run_step = Button(self.f4, text="Run Step",
+            command=self.runStep, image=self.img2, compound="top")
+        self.run_step.pack(side=LEFT)
+
+        self.img3 = PhotoImage(file="view_code.gif")
+        self.img4 = PhotoImage(file="view_ml.gif")
+        self.img5 = PhotoImage(file="new2.gif")
+        self.img6 = PhotoImage(file="open2.gif")
+        self.view_code = Button(self.f5, text="View Code",
+            command=self.viewCode, padx=5, image=self.img3, compound="top")
+        self.view_code.pack(side=LEFT)
+        self.view_ml = Button(self.f5, text="Machine Code",
+            command=self.viewML, padx=5, image=self.img4, compound="top")
+        self.view_ml.pack(side=LEFT)
+        self.new_btn = Button(self.f5, text="New", command=self.new, padx=5,
+            image=self.img5, compound="top")
         self.new_btn.pack(side=LEFT)
-        self.open_btn = Button(self, text="Open", command=self.open, padx=10,
-            image=self.img2, compound="top")
+        self.open_btn = Button(self.f5, text="Open", command=self.open,
+            padx=5, image=self.img6, compound="top")
         self.open_btn.pack(side=LEFT)
 
 
+    def initNewWindow(self):
+        self.new_window = Tk()
+        self.nw_frame = Frame(self.new_window)
+        self.nw_frame.pack()
+        self.txt = Text(self.nw_frame, width=50, height=20, padx=10, pady=10)
+
+
+    def openFileToRead(self, title, fileToRead):
+        self.initNewWindow()
+        self.new_window.title(title)
+
+        with open(fileToRead, 'rb') as t:
+            for line in t:
+                self.txt.insert(INSERT, line)
+
+        self.txt.pack(padx=10, pady=10)
+        self.new_window.mainloop()
+
+
     def viewCode(self):
-        self.hideWidgets()
+        self.openFileToRead("View Code", "input.in")
 
 
     def viewML(self):
+        self.openFileToRead("Machine Code", "output.out")
+
+
+    def runAll(self):
+        self.hideWidgets()
+
+
+    def runStep(self):
         self.hideWidgets()
 
 
