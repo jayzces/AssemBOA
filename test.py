@@ -16,4 +16,6 @@ semantic.analyze(file_to_read)
 code_translator = CodeTranslator(syntactic.token_dictionary, semantic.symbol_table)
 code_translator.translate(file_to_write)
 computer = Computer()
-computer.execute(file_to_write)
+computer.execute(file_to_write, True)
+for item in computer.exec_log:
+    print item
