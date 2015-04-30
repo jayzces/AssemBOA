@@ -1,10 +1,20 @@
 import tkFileDialog
 from Tkinter import *
 
+from syntactic_analyzer import *
+from semantic_analyzer import *
+from code_translator import *
+from computer import *
+
 class Assemboa(Frame):
     def __init__(self, parent):
         Frame.__init__(self, parent)
         self.parent = parent
+        self.syntactic_analyzer = SyntacticAnalyzer()
+        self.semantic_analyzer = SemanticAnalyzer(self.syntactic_analyzer.token_dictionary)
+        # initially, code translator will be empty so you will need to call this line again
+        self.code_translator = CodeTranslator(self.syntactic_analyzer.token_dictionary, self.semantic_analyzer.symbol_table)
+        self.computer = Computer()
         # self.centerWindow()
         self.parent.geometry('+50+50')
         self.initUI()
@@ -39,7 +49,7 @@ class Assemboa(Frame):
         self.hideWidgets()
         self.img = PhotoImage(file="new.gif")
         self.img2 = PhotoImage(file="open.gif")
-        self.img3 = PhotoImage(file="run.gif")
+        # self.img3 = PhotoImage(file="run.gif")
         self.new_btn = Button(self, text="New", command=self.new, padx=10,
             image=self.img, compound="top")
         self.new_btn.pack(side=LEFT)
@@ -104,6 +114,15 @@ class Assemboa(Frame):
         self.hideWidgets()
         self.text = Text(self, width=50, height=20, padx=10, pady=10)
 
+
+        # Start of actual translation
+        self.syntactic_analyzer.analyze('input.in')
+        self.semantic_analyzer = SemanticAnalyzer(self.syntactic_analyzer.token_dictionary)
+        self.semantic_analyzer.analyze('input.in')
+        self.code_translator = CodeTranslator(self.syntactic_analyzer.token_dictionary, self.semantic_analyzer.symbol_table)
+        self.code_translator.translate('output.out')
+
+
         with open('output.out', 'rb') as txt:
             for line in txt:
                 self.text.insert(INSERT, line)
@@ -137,6 +156,12 @@ class Assemboa(Frame):
         var2.set("Stack")
         self.title2.grid(row=0, column=1)
         self.text2 = Text(self.f2, width=10, height=15, padx=10, pady=10)
+
+        if not self.computer.stack:
+            for x in range(0,5):
+                self.text2.insert(END, '[' + str(x) + ']: Empty\n')
+
+
         self.text2.grid(row=1, column=1, padx=13)
 
         var3 = StringVar()
@@ -145,6 +170,11 @@ class Assemboa(Frame):
         self.title3.grid(row=0, column=2)
         self.text3 = Text(self.f2, width=20, height=15, padx=10, pady=10)
         self.text3.grid(row=1, column=2, padx=13)
+
+        print self.computer.address_space
+        if self.computer.address_space is not None:
+            for x in range(0,40):
+                self.text3.insert(END, '[' + str(x).zfill(2) + ']:\tEmpty\n')
 
         self.f3 = Frame(self)
         self.f3.pack()
@@ -218,6 +248,7 @@ class Assemboa(Frame):
 
     def runAll(self):
         self.hideWidgets()
+        self.computer.execute('output.out')
 
 
     def runStep(self):
