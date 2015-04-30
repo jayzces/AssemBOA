@@ -1,4 +1,4 @@
-import tkFileDialog
+import tkFileDialog, tkSimpleDialog
 from Tkinter import *
 
 from syntactic_analyzer import *
@@ -15,6 +15,9 @@ class Assemboa(Frame):
         # initially, code translator will be empty so you will need to call this line again
         self.code_translator = CodeTranslator(self.syntactic_analyzer.token_dictionary, self.semantic_analyzer.symbol_table)
         self.computer = Computer()
+        self.entry = None
+        self.label = None
+        self.value = 0
         # self.centerWindow()
         self.parent.geometry('+50+50')
         self.initUI()
@@ -196,9 +199,9 @@ class Assemboa(Frame):
         self.run_all = Button(self.f4, text="Run All", command=self.runAll,
             padx=5, image=self.img, compound="top")
         self.run_all.pack(side=LEFT)
-        self.run_step = Button(self.f4, text="Run Step",
-            command=self.runStep, image=self.img2, compound="top")
-        self.run_step.pack(side=LEFT)
+        # self.run_step = Button(self.f4, text="Run Step",
+        #     command=self.runStep, image=self.img2, compound="top")
+        # self.run_step.pack(side=LEFT)
 
         self.img3 = PhotoImage(file="view_code.gif")
         self.img4 = PhotoImage(file="view_ml.gif")
@@ -244,12 +247,13 @@ class Assemboa(Frame):
     def viewML(self):
         self.openFileToRead("Machine Code", "output.out")
 
+    def getInput(self):
+        self.value = tkSimpleDialog.askinteger('Prompt', 'Enter a value: ')
 
     def runAll(self):
         # self.hideWidgets()
         self.computer.execute('output.out')
         self.run()
-
         self.text2.delete("1.0", END)
         print self.computer.stack
         if self.computer.stack:
@@ -258,6 +262,7 @@ class Assemboa(Frame):
         else:
             for x in range(0,5):
                 self.text2.insert(END, '[' + str(x) + ']: Empty\n')
+
         self.text3.delete("1.0", END)
         for address in self.computer.address_space:
                 self.text3.insert(INSERT, '[' + str(address) + ']\n')
