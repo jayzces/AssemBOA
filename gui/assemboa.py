@@ -171,10 +171,9 @@ class Assemboa(Frame):
         self.text3 = Text(self.f2, width=20, height=15, padx=10, pady=10)
         self.text3.grid(row=1, column=2, padx=13)
 
-        print self.computer.address_space
         if self.computer.address_space is not None:
-            for x in range(0,40):
-                self.text3.insert(END, '[' + str(x).zfill(2) + ']:\tEmpty\n')
+            for address in self.computer.address_space:
+                self.text3.insert(INSERT, '[' + str(address) + ']\n')
 
         self.f3 = Frame(self)
         self.f3.pack()
@@ -247,9 +246,21 @@ class Assemboa(Frame):
 
 
     def runAll(self):
-        self.hideWidgets()
+        # self.hideWidgets()
         self.computer.execute('output.out')
+        self.run()
 
+        self.text2.delete("1.0", END)
+        print self.computer.stack
+        if self.computer.stack:
+            for item in self.computer.stack:
+                self.text2.insert(INSERT, '[' + str(item) + ']\n')
+        else:
+            for x in range(0,5):
+                self.text2.insert(END, '[' + str(x) + ']: Empty\n')
+        self.text3.delete("1.0", END)
+        for address in self.computer.address_space:
+                self.text3.insert(INSERT, '[' + str(address) + ']\n')
 
     def runStep(self):
         self.hideWidgets()
